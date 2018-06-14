@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Firebase Auth APP</title>
+</head>
+
+<body>
+
+    <div class="contaiter">
+
+        <h1>Firebase Authentication</h1>
+
+        <div class="auth">
+            Email:
+            <input type="text" class="email" value="anoop.pr@experionglobal.com"> Password:
+            <input type="text" class="password">
+            <br>
+
+            <button id="register">Register</button>
+            <button id="login">Login</button>
+        </div>
+
+
+
+        <div class="user-info">
+            <button id="me">Get Profile</button>
+            <button id="logout">Logout</button>
+        </div>
+
+        <p class="user-name"></p>
+
+
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyAk1nk4nVzfKmkoVC53yb_ffLsiD75z0aE",
+            authDomain: "wind-d8223.firebaseapp.com",
+            databaseURL: "https://wind-d8223.firebaseio.com",
+            projectId: "wind-d8223",
+            storageBucket: "wind-d8223.appspot.com",
+            messagingSenderId: "224976308894"
+        };
+        firebase.initializeApp(config);
+
+
+        $(document).ready(() => {
+
+            let authToken = '';
+
+            $('#register').on('click', (e) => {
+
+                const { email, password } = getData();
+
+                console.log('>> Register Event');
+
+                firebase.auth().createUserWithEmailAndPassword(email, password)
+                    .then((result) => {
+                        console.log('>> Registration Success');
+                        firebase.auth().onAuthStateChanged(function (user) {
+
+                            user.sendEmailVerification();
+                            console.log('>> Email verification sent');
+
+                            axios.post('/users', {
+                                email, uid: user.uid
+                            }).then(function (response) {
+                                console.log('>> Data saved to the database');
+                                clearData();
+                            })
+                                .catch(function (error) {
+                                    throw new Error(error);
+                                });
+                        });
+                    })
+                    .catch(function (error) {
+                        // Handle Errors here
+                        alert(error.message);
+                    });
+            });
+
+
+            $('#login').on('click', (e) => {
+
+                const { email, password } = getData();
+
+                console.log('Login Event', e);
+
+                firebase.auth().signInWithEmailAndPassword(email, password)
+                    .then((user) => {
+                        firebase.auth().currentUser.getIdToken()
+                            .then(function (idToken) {
+                                authToken = idToken;
+                                authEnabled(true);
+                            }).catch(function (error) {
+                                throw new Error(error);
+                            });
+                        clearData();
+                    })
+                    .catch(function (error) {
+                        // Handle Errors here
+                        alert(error.message);
+                    });
+
+            });
+
+            $("#logout").on('click', (e) => {
+                firebase.auth().signOut().then(function () {
+                    // Sign-out successful.
+                    authEnabled(false);
+                }).catch(function (error) {
+                    // An error happened.
+                    alert(error.message);
+                });
+            });
+
+            $("#me").on('click', (e) => {
+
+                axios.get('/users/me', {
+                    headers: {
+                        'x-auth': authToken
+                    }
+                }).then(function (response) {
+                    console.log(response);
+
+                    $(".user-name").html('Logged in as: ' + response.data.data.email);
+
+                }).catch(function (error) {
+                    alert(error);
+                });
+
+            });
+
+            function getData() {
+                return {
+                    email: $('input.email').val(),
+                    password: $('input.password').val()
+                };
+            }
+
+            function clearData() {
+                $('input.email').val('anoop.pr@experionglobal.com');
+                $('input.password').val('');
+            }
+
+            function authEnabled(value = false) {
+                // if (value === true) {
+                //     $(".user-info").show();
+                //     $(".auth").hide();
+                // } else {
+                //     $('.user-info').hide();
+                //     $(".auth").show();
+                // }
+            }
+
+
+        });
+
+    </script>
+
+</body>
+
+</html>

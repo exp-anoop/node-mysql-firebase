@@ -1,0 +1,10 @@
+{
+    "apps": [
+        {
+            "name": "explore-api",
+            "script": "server.js",
+            "instances": "max",
+            "exec_mode": "cluster"
+        }
+    ]
+}

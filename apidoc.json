@@ -1,0 +1,8 @@
+{
+	"name": "VendorXchange - API Documentation",
+	"description": "API documentation for VendorXchange mobile and web application.",
+	"url": "http://0.0.0.0",
+	"template": {
+		"withCompare": false
+	}
+}
