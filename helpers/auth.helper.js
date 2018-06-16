@@ -17,7 +17,7 @@ const shield = async (req, res, next) => {
 
     try {
         const decodedToken = await admin.auth().verifyIdToken(token);
-        console.log(decodedToken);
+ 
         req.user = await getUserFromUID(decodedToken.uid);
 
         if(!req.user) {
